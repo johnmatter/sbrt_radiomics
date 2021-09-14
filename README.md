@@ -9,9 +9,11 @@ protocols for lung cancer.
 1. [Connect](https://www.rc.virginia.edu/userinfo/rivanna/login/) to [rivanna](https://www.rc.virginia.edu/userinfo/rivanna/overview/)
 2. Clone this repo somewhere (e.g. /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics)
 3. Create a python virtual environment by running the following commands in the directory above your cloned repo
-  1. python -m venv sbrt_radiomics_env
-  2. source sbrt_radiomics_env/src/activate
-  3. pip install numpy matplotlib pandas pydicom pynrrd pyradiomics scipy SimpleITK
+   ```
+   python -m venv sbrt_radiomics_env
+   source sbrt_radiomics_env/src/activate
+   pip install numpy matplotlib pandas pydicom pynrrd pyradiomics scipy SimpleITK
+   ```
 
 You will have to source the activate script every time you (or a SLURM job) want to run these scripts.
 
