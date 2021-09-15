@@ -11,7 +11,7 @@ protocols for lung cancer.
 3. Create a python virtual environment by running the following commands in the directory above your cloned repo
    ```
    python -m venv sbrt_radiomics_env
-   source sbrt_radiomics_env/src/activate
+   source sbrt_radiomics_env/bin/activate
    pip install numpy matplotlib pandas pydicom pynrrd pyradiomics scipy SimpleITK
    ```
 
