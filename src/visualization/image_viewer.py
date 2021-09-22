@@ -58,6 +58,7 @@ def redraw(i,j,k):
         # axs[3].imshow(dose[:, j, :], cmap=dose_cmap, alpha=dose_alpha)
         # axs[6].imshow(dose[k, :, :].T, cmap=dose_cmap, alpha=dose_alpha, origin='lower')
 
+    # TODO: this varies by scan. I should start writing this as metadata in NRRDs
     axs[0].set_aspect(1.171875/1.171875)
     axs[1].set_aspect(1.171875/3.000000)
     axs[4].set_aspect(3.000000/1.171875)
