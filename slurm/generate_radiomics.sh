@@ -9,6 +9,6 @@ for patient in ${patients[@]}; do
 
     cat ./radiomics_template_slurm.txt | \
     sed -e "s/PATIENTSTR/${patient_str}/" \
-    sed -e "s/PATIENTDIR/${patient_dir}/" \
+        -e "s/PATIENTDIR/${patient_dir}/" \
         > $filename
 done
