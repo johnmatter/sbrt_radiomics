@@ -12,6 +12,7 @@ for patient in ${patients[@]}; do
 
         cat ./preprocess_template_slurm.txt | \
         sed -e "s/PATIENTSTR/${patient_str}/" \
+        sed -e "s/PATIENTDIR/${patient_dir}/" \
             > $filename
 
     done
