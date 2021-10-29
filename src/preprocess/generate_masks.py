@@ -10,10 +10,11 @@ from sys import exit
 from file_utils import find_prefixed_file, find_dicom_directory, implay, find_prefixed_files
 
 basic_mask_dicts = [
-	{'NameStrings': ['aorta'], 'InvalidNStrings' : ['wall', 'blood', 'shrink'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
-	{'NameStrings': ['aorta', 'blood'], 'InvalidNStrings' : ['wall', 'shrink'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
-	{'NameStrings': ['aorta', 'wall'], 'InvalidNStrings' : ['blood', 'shrink'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
-	{'NameStrings': ['aorta', 'shrink'], 'InvalidNStrings' : ['blood', 'wall'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
+	{'NameStrings': ['aorta'], 'InvalidNStrings' : ['wall', 'blood', 'shrink', 'grow'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
+	{'NameStrings': ['aorta', 'blood'], 'InvalidNStrings' : ['wall', 'shrink', 'grow'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
+	{'NameStrings': ['aorta', 'wall'], 'InvalidNStrings' : ['blood', 'shrink', 'grow'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
+	{'NameStrings': ['aorta', 'shrink'], 'InvalidNStrings' : ['blood', 'wall', 'grow'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
+	{'NameStrings': ['aorta', 'grow'], 'InvalidNStrings' : ['blood', 'wall', 'shrink'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
 	{'NameStrings': ['heart'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
 	{'NameStrings': ['ivc'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},
 	{'NameStrings': ['svc'], 'GV': True, 'Stationary': False, 'CardiacOutput': 1.},

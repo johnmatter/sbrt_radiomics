@@ -28,10 +28,26 @@ for mask in $(ls $mask_dir/flipped_and_filled/*nrrd); do
 done
 
 # Generate aorta wall mask
-aorta=$(ls $mask_dir | grep -i aorta | grep -v -i blood | grep -v -i wall | grep -i shrink)
-blood=$(ls $mask_dir | grep -i aorta | grep -i blood)
+aorta=$mask_dir/Aorta_-_Shrink__1.00mm.nrrd
+blood=$mask_dir/Aorta_blood.nrrd
 if [[ -f $mask_dir/$aorta && -f $mask_dir/$blood ]]; then
+    echo Using the following masks for aorta wall:
+    echo outer : $aorta
+    echo inner : $blood
     python make_aorta_wall.py $patients_dir/$patient/masks --aorta $aorta --blood $blood
 else
-    echo "FATAL: Could not find masks to make aorta wall nrrd" && exit 69
+    echo "FATAL: Could not find masks to make aorta wall nrrd" && exit 10
+fi
+
+# Generate the new version
+# Use aorta grown by 1mm as "aorta", and the unaltered aorta as "blood" (i.e. the interior)
+aorta=$mask_dir/Aorta_-_Grow__1.00mm.nrrd
+blood=$mask_dir/Aorta
+if [[ -f $mask_dir/$aorta && -f $mask_dir/$blood ]]; then
+    echo Using the following masks for aorta wall v2:
+    echo outer : $aorta
+    echo inner : $blood
+    python make_aorta_wall.py $mask_dir --aorta $aorta --blood $blood --output Aorta_wall_JM2.nrrd
+else
+    echo "FATAL: Could not find masks to make aorta wall 2 nrrd" && exit 20
 fi

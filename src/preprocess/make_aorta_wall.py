@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('directory', type=str, help='full path location of masks directory')
 parser.add_argument('--aorta', type=str, help='name of aorta mask')
 parser.add_argument('--blood', type=str, help='name of blood mask')
+parser.add_argument('--output', type=str, help='name of output mask', default='Aorta_wall_JM.nrrd')
 args = parser.parse_args()
 
 
@@ -19,5 +20,5 @@ blood, blood_header = nrrd.read(blood_filename)
 
 wall = 1*np.logical_and(aorta, np.logical_not(np.logical_and(aorta,blood)))
 
-wall_filename = os.path.join(args.directory, "Aorta_wall_JM.nrrd")
+wall_filename = os.path.join(args.directory, args.output)
 nrrd.write(wall_filename, wall)
