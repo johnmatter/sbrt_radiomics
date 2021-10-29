@@ -44,7 +44,6 @@ Returns:
 	A - the affine transformation matrix
 '''
 def build_affine_transformation(headers):
-	print('here is headers', type(headers), headers)
 	N = len(headers)
 	dr, dc = float(headers[0].PixelSpacing[0]), float(headers[0].PixelSpacing[1])
 	F = np.zeros([3, 2])
