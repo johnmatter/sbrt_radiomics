@@ -29,22 +29,18 @@ def cleanup(radiomic_features):
     return radiomic_features
 
 def write_mask(mask, low_z, high_z, directory):
-    # Mask mask by dose
-    lo_mask = np.ma.masked_where(dose > float(dose_bin[0]), dose).mask
-    hi_mask = np.ma.masked_where(dose <= float(dose_bin[1]), dose).mask
-    dose_mask = np.logical_and(lo_mask, hi_mask)
-    new_mask = np.logical_and(dose_mask, mask)
-
-    # Need to convert from bool to int for nrrd
-    new_mask = new_mask * 1
+    # Set region outside [low_z, high_z] (inclusive) to zero
+    # TODO: some better safety checks in case a mask is defined all the way to the absolute top and bottom of an image
+    mask[:,:, 0:(low_z-1)] *= 0
+    mask[:,:, (high_z+1):(mask.shape[2]-1)] *= 0
 
     # Write mask to disk
     mask_filename = args.mask
     mask_splitext = os.path.splitext(mask_filename)
-    output_filename = '%s_%s%s' % (mask_splitext[0], dose_bin_label, mask_splitext[1])
+    output_filename = '%s_z_slice_%d_to_%d' % (mask_splitext[0], low_z, high_z, mask_splitext[1])
     output_filename = output_filename.replace(' ','_')
 
-    binned_mask_directory=os.path.join(directory, 'binned_by_dose')
+    binned_mask_directory=os.path.join(directory, 'binned_by_z')
     if (not(os.path.exists(binned_mask_directory))):
         print('Creating directory ' + binned_mask_directory)
         os.mkdir(binned_mask_directory)
@@ -60,7 +56,6 @@ if __name__=='__main__':
     parser.add_argument('directory', type=str, help='The patient directory to look in')
     parser.add_argument('image', type=str, help='The patient CT to use (assumed to be in PATIENT/')
     parser.add_argument('mask', type=str, help='The name of the mask to use (assumed to be in PATIENT/masks/)')
-    parser.add_argument('dose_bins', type=float, nargs='*', help='a list of dose bin edges')
     parser.add_argument('--output_directory', type=str, help='Where to write output CSV')
     args = parser.parse_args()
 
@@ -81,15 +76,6 @@ if __name__=='__main__':
         print('Failed to load mask: ' + mask_filename)
         sys.exit(1)
 
-    try:
-        # Read dose
-        dose_filename = os.path.join(args.directory, "dose_in_CT_dimensions.nrrd")
-        dose, hdr = nrrd.read(dose_filename)
-    except Exception as ex:
-        print(type(ex), ex)
-        print('Failed to load dose: ' + dose_filename)
-        sys.exit(1)
-
     # Check if CT exists
     image_filename = os.path.join(args.directory, args.image)
     if not(os.path.exists(image_filename)):
@@ -99,25 +85,33 @@ if __name__=='__main__':
     # Create feature extractor
     extractor = featureextractor.RadiomicsFeatureExtractor()
 
-    # What dose values are we interested in?
-    dose_bin_edges = args.dose_bins
-    dose_bin_edges.append(np.inf)
+    # Find locations in Z at which to 'slice', create a mask, and then calculate radiomic features
+    nonzero_z = np.nonzero(mask)[2]
+    top = max(nonzero_z)
+    bottom = min(nonzero_z)
+    z_bins = np.arange(4)*int((top-bottom)/3) + bottom
 
-    # Loop over dose bins, create a mask, and then calculate radiomic features for it
+
     radiomic_features = {}
-    for dose_bin in zip(dose_bin_edges, dose_bin_edges[1:]):
-        dose_bin_label = '%.1f to %.1f Gy' % dose_bin if np.isfinite(dose_bin).all() else '%.1f to inf Gy' % dose_bin[0]
-        dose_mask_filename = write_mask(dose, mask, dose_bin, dose_bin_label, mask_directory)
-        try:
-            radiomic_features[dose_bin] = extractor.execute(image_filename, dose_mask_filename)
-            radiomic_features[dose_bin]['success'] = True
-        except ValueError:
-            print('ERROR PROCESSING DOSE LIMIT ' + str(dose_bin))
-            radiomic_features[dose_bin] = {'success' : False}
 
-        radiomic_features[dose_bin]['patient'] = patient_initials
-        radiomic_features[dose_bin]['mask'] = args.mask
-        radiomic_features[dose_bin]['dose_bin'] = dose_bin_label
+    bin_labels = ['low_z', 'mid_z', 'high_z']
+    bin_idx = 0
+    for (low_z,high_z) in zip(z_bins, z_bins[1:]):
+        z_bin = bin_labels[bin_idx]
+        bin_idx+=1
+
+        z_bin_mask_filename = write_mask(mask, low_z, high_z, directory)
+
+        try:
+            radiomic_features[z_bin] = extractor.execute(image_filename, z_bin_mask_filename)
+            radiomic_features[z_bin]['success'] = True
+        except ValueError:
+            print('ERROR PROCESSING ' + str(z_bin))
+            radiomic_features[z_bin] = {'success' : False}
+
+        radiomic_features[z_bin]['patient'] = patient_initials
+        radiomic_features[z_bin]['mask'] = args.mask
+        radiomic_features[z_bin]['z_bin'] = z_bin
 
 
     # Clean up the dictionary
@@ -140,19 +134,20 @@ if __name__=='__main__':
     # We need to get a list of the header names from one of the successful iterations
     # If non of the iterations were successful, warn user
     fieldnames=[]
-    for dose_bin in zip(dose_bin_edges, dose_bin_edges[1:]):
-        if radiomic_features[dose_bin]['success'] == False:
+    for z_bin in bin_labels:
+        if radiomic_features[z_bin]['success'] == False:
             continue
         else:
-            fieldnames = list(radiomic_features[dose_bin].keys())
+            fieldnames = list(radiomic_features[z_bin].keys())
             break
 
     if len(fieldnames)>0:
         with open(csv_filename, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames, extrasaction='ignore')
             writer.writeheader()
-            for dose_bin in zip(dose_bin_edges, dose_bin_edges[1:]):
-                writer.writerow(radiomic_features[dose_bin])
+
+            for z_bin in bin_labels:
+                writer.writerow(radiomic_features[z_bin])
     else:
         print('Could not write csvs because `fieldnames` is empty.')
         print('Check to see if your mask is empty!')
