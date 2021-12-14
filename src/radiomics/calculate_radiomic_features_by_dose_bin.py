@@ -106,7 +106,7 @@ if __name__=='__main__':
     # Loop over dose bins, create a mask, and then calculate radiomic features for it
     radiomic_features = {}
     for dose_bin in zip(dose_bin_edges, dose_bin_edges[1:]):
-        dose_bin_label = '%d to %d Gy' % dose_bin if np.isfinite(dose_bin).all() else '%d to inf Gy' % dose_bin[0]
+        dose_bin_label = '%.1f to %.1f Gy' % dose_bin if np.isfinite(dose_bin).all() else '%.1f to inf Gy' % dose_bin[0]
         dose_mask_filename = write_mask(dose, mask, dose_bin, dose_bin_label, mask_directory)
         try:
             radiomic_features[dose_bin] = extractor.execute(image_filename, dose_mask_filename)
