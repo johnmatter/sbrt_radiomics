@@ -29,15 +29,19 @@ def cleanup(radiomic_features):
     return radiomic_features
 
 def write_mask(mask, low_z, high_z, directory):
+    # create a copy, because python arrays are effectively passed by value
+    new_mask = np.copy(mask)
+
     # Set region outside [low_z, high_z] (inclusive) to zero
-    # TODO: some better safety checks in case a mask is defined all the way to the absolute top and bottom of an image
-    mask[:,:, 0:(low_z-1)] *= 0
-    mask[:,:, (high_z+1):(mask.shape[2]-1)] *= 0
+    low_slice = max(0, low_z-1)
+    high_slice = min(new_mask.shape[2]-1, high_z+1)
+    new_mask[:,:, 0:low_slice] *= 0
+    new_mask[:,:, high_slice:(new_mask.shape[2]-1)] *= 0
 
     # Write mask to disk
     mask_filename = args.mask
     mask_splitext = os.path.splitext(mask_filename)
-    output_filename = '%s_z_slice_%d_to_%d' % (mask_splitext[0], low_z, high_z, mask_splitext[1])
+    output_filename = '%s_z_slice_%d_to_%d%s' % (mask_splitext[0], low_z, high_z, mask_splitext[1])
     output_filename = output_filename.replace(' ','_')
 
     binned_mask_directory=os.path.join(directory, 'binned_by_z')
@@ -53,7 +57,7 @@ def write_mask(mask, low_z, high_z, directory):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('directory', type=str, help='The patient directory to look in')
+    parser.add_argument('directory', type=str, help='The patient directory to look in /somewhere/fullpath/PATIENT/')
     parser.add_argument('image', type=str, help='The patient CT to use (assumed to be in PATIENT/')
     parser.add_argument('mask', type=str, help='The name of the mask to use (assumed to be in PATIENT/masks/)')
     parser.add_argument('--output_directory', type=str, help='Where to write output CSV')
@@ -100,7 +104,7 @@ if __name__=='__main__':
         z_bin = bin_labels[bin_idx]
         bin_idx+=1
 
-        z_bin_mask_filename = write_mask(mask, low_z, high_z, directory)
+        z_bin_mask_filename = write_mask(mask, low_z, high_z, mask_directory)
 
         try:
             radiomic_features[z_bin] = extractor.execute(image_filename, z_bin_mask_filename)
@@ -113,6 +117,19 @@ if __name__=='__main__':
         radiomic_features[z_bin]['mask'] = args.mask
         radiomic_features[z_bin]['z_bin'] = z_bin
 
+    # For good measure, let's also calculate features for the full aorta
+    z_bin = "full"
+    bin_labels.append(z_bin)
+    try:
+        radiomic_features[z_bin] = extractor.execute(image_filename, mask_filename)
+        radiomic_features[z_bin]['success'] = True
+    except ValueError:
+        print('ERROR PROCESSING ' + str(z_bin))
+        radiomic_features[z_bin] = {'success' : False}
+
+    radiomic_features[z_bin]['patient'] = patient_initials
+    radiomic_features[z_bin]['mask'] = args.mask
+    radiomic_features[z_bin]['z_bin'] = "full"
 
     # Clean up the dictionary
     radiomic_features = cleanup(radiomic_features)
