@@ -12,10 +12,18 @@ from file_utils import find_prefixed_file, find_dicom_directory, implay, find_pr
 
 basic_mask_dicts = []
 
-materials=['050', '040', '030', '020', 'wood', 'rubber', 'dcork', 'acrylic', 'cork', 'resin']
-for m in itertools.product(materials, range(0,16)):
-	roi_name = '%s_%02d' % m
-	basic_mask_dicts.append({'NameStrings': [roi_name], 'GV': False, 'Stationary': True, 'CardiacOutput': 0.})
+# materials=['050', '040', '030', '020', 'wood', 'rubber', 'dcork', 'acrylic', 'cork', 'resin']
+materials=['020']
+# materials=['cork_dense'] # needed for one set of mismatched label's in CCR1_T2's RTSTRUCT
+for material in itertools.product(materials, range(0,16)):
+    roi_name = '%s_%02d' % material
+    mdict = {}
+    mdict['NameStrings'] = [roi_name]
+    if material == "cork":
+        mdict['StartsWith'] = "cork"
+    if material == "dcork":
+        mdict['StartsWith'] = "dcork"
+    basic_mask_dicts.append(mdict)
 
 '''
 Find the index for a given organ in the contours structure
@@ -25,33 +33,36 @@ Parameters:
 Returns:
 	The index of the matching contour in the structure
 '''
-def find_matching_contour_idx(contours, dct):
-	for i, nm in enumerate(contours['ROIName']):
-		lnm = nm.lower()
-		found = True
-		for j in dct['NameStrings']:
-			if not j.lower() in lnm:
-				found = False
-		if 'InvalidNStrings' in dct:
-			for k in dct['InvalidNStrings']:
-				if k.lower() in lnm:
-					found = False
-		if found:
-			return i
+def find_matching_contour_idx(contours, dct, exact_match=False):
+    if exact_match:
+        if len(dct['NameStrings'])>1:
+            print('WARNING: multiple strings specified in dictionary with exact_match=True')
+            print(dct)
+        for i, nm in enumerate(contours['ROIName']):
+            if nm.lower() == dct['NameStrings'][0]:
+                return i
+    else:
+        for i, nm in enumerate(contours['ROIName']):
+            lnm = nm.lower()
+            found = True
+            for j in dct['NameStrings']:
+                # Check if the strings in the mask dictionary are found in
+                # the name of this contour from RTSTRUCT
+                if not j.lower() in lnm:
+                    found = False
+            if 'InvalidNStrings' in dct:
+                for k in dct['InvalidNStrings']:
+                    # Check if any of the 'invalid strings' are in
+                    # this contour name
+                    if k.lower() in lnm:
+                        found = False
+            if 'StartsWith' in dct:
+                if not lnm.startswith(mdict['StartsWith']):
+                    found = false
+            if found:
+                return i
 
-	return -1
-
-'''
-Calculate the average layer size in the z-direction of a given mask
-Parameters:
-	mask - The boolean mask for an organ
-Returns:
-	The average number of True values in each Z-slice
-'''
-def layer_size(mask):
-	num = np.sum(mask, axis=(0, 1))
-	num = num[num > 0]
-	return np.sum(num) / len(num)
+    return -1
 
 '''
 Find the first CT frame in the z-direction
@@ -106,17 +117,10 @@ Parameters:
 	mask_dicts - Information about which masks to include
 		Entries in mask_dicts have the format:
 			NameStrings - search for ROIs in contours which have these name strings (use lowercase)
-			GV - True if the organ is a great vessel
-			Stationary - True if the organ is stationary (thoracic spine)
-			Cardiac Output - Percentage of total cardiac output (0-1)
 Returns:
 	masks - A set of dictionaries, each containing:
 		Name: The name of the organ
-		GV: Whether the organ is a great vessel
-		Stationary: Whether the organ is stationary
-		CardiacOutput: The percent of total cardiac output for the organ (0-1)
 		Mask: A boolean mask with the same dimensions as the dose files
-		LayerSize: The average layer size of the organ
 '''
 def mask_generation(
 	contours,
@@ -130,16 +134,13 @@ def mask_generation(
 	for i, dct in enumerate(mask_dicts):
 		print('dct', dct['NameStrings'])
 
-		contour_idx = find_matching_contour_idx(contours, dct)
+		contour_idx = find_matching_contour_idx(contours, dct, True)
 		if contour_idx < 0:
 			z += 1
 			continue
 
 		mdict = {}
 		mdict['Name'] = contours['ROIName'][contour_idx]
-		mdict['GV'] = dct['GV']
-		mdict['Stationary'] = dct['Stationary']
-		mdict['CardiacOutput'] = dct['CardiacOutput']
 
 		print('Creating mask for organ %s' % mdict['Name'])
 
@@ -147,7 +148,6 @@ def mask_generation(
 		mdict['Mask'] = ndimage.rotate(mdict['Mask'], -90, reshape=False)
 		mdict['Mask'] = np.fliplr(mdict['Mask'])
 
-		mdict['LayerSize'] = layer_size(mdict['Mask'])
 		masks.append(mdict)
 
         # # Keeping this for now, in case we want to make the "other organs" mask in the future

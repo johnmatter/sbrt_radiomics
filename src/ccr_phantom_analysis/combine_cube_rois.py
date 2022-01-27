@@ -1,4 +1,5 @@
 import os
+import gc
 import argparse
 import nrrd
 import numpy as np
@@ -35,7 +36,7 @@ if __name__=='__main__':
     mask_directory = os.path.join(args.directory, 'masks')
 
     # Materials in the CCR phantom
-    materials=['050', '040', '030', '020', 'wood', 'rubber', 'dcork', 'acrylic', 'cork', 'resin']
+    materials=['050', '040', '030', '020', 'wood', 'rubber', 'acrylic', 'cork', 'resin', 'dcork', 'cork_dense']
 
     # This will contain a list of tuples, each containing (a mask, and its filename)
     masks = []
@@ -54,7 +55,11 @@ if __name__=='__main__':
             roi_fullpath = os.path.join(mask_directory, roi_name)
 
             # Read the file
-            mask, header = nrrd.read(roi_fullpath)
+            try:
+                mask, header = nrrd.read(roi_fullpath)
+            except:
+                print('!!! WARNING: Could not load %s' % roi_fullpath)
+                continue
 
             # Add the mask to cubes
             cubes.append(mask)
@@ -62,12 +67,18 @@ if __name__=='__main__':
             # Get the combination of the cubes
             mask = combine_cubes(cubes)
 
-            # Add the combination to the masks list
+            # Write mask to disk
             mask_name = '%s_00_through_%02d.nrrd' % (material, n)
-            masks.append((mask, mask_name))
 
-    # Write masks to disk
-    for mask in masks:
-        filename = os.path.join(mask_directory, mask[1])
-        print('Writing ' + filename)
-        nrrd.write(filename, mask[0])
+            filename = os.path.join(mask_directory, mask_name)
+            print('Writing ' + filename)
+            nrrd.write(filename, mask)
+
+        # Garbage collection
+        for cube in cubes:
+            del cube
+        if 'mask' in locals():
+            del mask
+        if 'cubes' in locals():
+            del cubes
+        gc.collect()
