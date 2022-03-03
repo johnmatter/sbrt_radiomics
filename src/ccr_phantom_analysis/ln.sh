@@ -4,8 +4,8 @@
 # the sbrt_radiomics repo.
 # The original data are available at https://wiki.cancerimagingarchive.net/display/Public/Credence+Cartridge+Radiomics+Phantom+CT+Scans?preview=/24284300/25427982/labeled_ccr.jpg#242843000d1c0b53772a4fba8580e8b19f65069b
 
-src_dir=/Volumes/ssd750/radiomics/CCR_phantom/manifest-hRvKzFz21211753814618358941/CC-Radiomics-Phantom
-dest_dir=/Volumes/ssd750/radiomics/CCR_phantom/radiomics/data
+src_dir=/nv/vol141/phys_nrf/JohnMatter/ccr_phantom/CC-Radiomics-Phantom
+dest_dir=/nv/vol141/phys_nrf/JohnMatter/ccr_phantom/data
 
 scans=(CCR1_GE1 CCR1_GE2 CCR1_GE3 CCR1_GE4 CCR1_GE5 CCR1_GE6 CCR1_GE7 CCR1_P1 CCR1_P2 CCR1_P3 CCR1_P4 CCR1_P5 CCR1_S1 CCR1_S2 CCR1_T1 CCR1_T2 CCR1_T3)
 
