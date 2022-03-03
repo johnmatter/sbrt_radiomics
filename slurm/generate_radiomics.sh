@@ -1,18 +1,19 @@
 #!/bin/bash
-# patients=(BE CT DA FJ HD HI LJ MB MJ1 MK PJ2 PP SB WJ LK TC KS LL DJ)
-# patients=(MB HI WT BB1 GB)
-patients=(LJ)
-timepoints=(Pre Post1)
+# Generate radiomics slurm jobs for a patient
+# USAGE: ./generate_radiomics.sh patient timepoint1 timepoint2 ...
 
-for patient in ${patients[@]}; do
-    for timepoint in ${timepoints[@]}; do
-        patient_dir=${patient}\\/${timepoint}
-        patient_str=${patient}_${timepoint}
-        filename=radiomics_${patient_str}.slurm
+patient=$1
 
-        cat ./radiomics_template_slurm.txt | \
-        sed -e "s/PATIENTSTR/${patient_str}/" \
-            -e "s/PATIENTDIR/${patient_dir}/" \
-            > $filename
-    done
+# Loop over timepoints.
+# The array $@ contains command line arguments,
+# and :2 tells the loop to skip the first element.
+for timepoint in "${@:2}"; do
+    patient_dir=${patient}\\/${timepoint}
+    patient_str=${patient}_${timepoint}
+    filename=radiomics_${patient_str}.slurm
+
+    cat ./radiomics_template_slurm.txt | \
+    sed -e "s/PATIENTSTR/${patient_str}/" \
+        -e "s/PATIENTDIR/${patient_dir}/" \
+        > $filename
 done
