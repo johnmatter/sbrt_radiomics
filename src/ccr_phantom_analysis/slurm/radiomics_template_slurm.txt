@@ -2,7 +2,7 @@
 #SBATCH --time=1-00:00:00
 #SBATCH --output=radiomics_PATIENTSTR.out
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=matter@virginia.edu
+#SBATCH --mail-user=YOU@virginia.edu
 #SBATCH --account=phys_nrf
 #SBATCH --partition=standard
 #SBATCH --mem=8000
