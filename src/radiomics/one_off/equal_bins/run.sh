@@ -2,8 +2,8 @@
 # This is an attempt to study radiomic features in dose bins that have equal
 # statistics.
 
-min_dose=50
-max_dose=60
+min_dose=0
+max_dose=100
 n_bins=2
 
 # TODO: not this. Horrible relative path practice.

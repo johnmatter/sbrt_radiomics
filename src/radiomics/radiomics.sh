@@ -12,4 +12,5 @@ mask_dir=$patient_dir/masks
 for mask in $(ls $mask_dir/Aorta*nrrd); do
     mask=$(basename $mask)
     python calculate_radiomic_features_by_dose_bin.py $patient_dir ct_img.nrrd $mask 0 1 30 50 60
+    # python calculate_radiomic_features_by_dose_bin.py $patient_dir ct_img.nrrd $mask 0 25
 done

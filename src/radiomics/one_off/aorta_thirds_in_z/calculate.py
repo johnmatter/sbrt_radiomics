@@ -60,6 +60,7 @@ if __name__=='__main__':
     parser.add_argument('directory', type=str, help='The patient directory to look in /somewhere/fullpath/PATIENT/')
     parser.add_argument('image', type=str, help='The patient CT to use (assumed to be in PATIENT/')
     parser.add_argument('mask', type=str, help='The name of the mask to use (assumed to be in PATIENT/masks/)')
+    parser.add_argument('slices', type=int, help='Number of slices to use')
     parser.add_argument('--output_directory', type=str, help='Where to write output CSV')
     args = parser.parse_args()
 
@@ -93,12 +94,12 @@ if __name__=='__main__':
     nonzero_z = np.nonzero(mask)[2]
     top = max(nonzero_z)
     bottom = min(nonzero_z)
-    z_bins = np.arange(4)*int((top-bottom)/3) + bottom
+    z_bins = np.arange(args.slices+1)*int((top-bottom)/args.slices) + bottom
 
 
     radiomic_features = {}
 
-    bin_labels = ['low_z', 'mid_z', 'high_z']
+    bin_labels = ['z_bin_%d' % (x+1) for x in range(args.slices)]
     bin_idx = 0
     for (low_z,high_z) in zip(z_bins, z_bins[1:]):
         z_bin = bin_labels[bin_idx]

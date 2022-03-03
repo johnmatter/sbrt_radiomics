@@ -9,7 +9,7 @@ patients_dir=../../../../data
 patient_dir=$patients_dir/$patient
 mask_dir=$patient_dir/masks
 
-for mask in $(ls $mask_dir/Aorta.nrrd); do
+for mask in $(ls $mask_dir/Aorta*.nrrd); do
     mask=$(basename $mask)
-    python calculate.py $patient_dir ct_img.nrrd $mask
+    python calculate.py $patient_dir ct_img.nrrd $mask 10
 done
