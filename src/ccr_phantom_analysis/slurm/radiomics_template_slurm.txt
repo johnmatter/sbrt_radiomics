@@ -19,6 +19,6 @@ module load python/3.6.6
 
 patient=PATIENTDIR
 
-source /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics_env2/bin/activate
-cd /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics/src/ccr_phantom_analysis
-./calculate_radiomic_features.sh /nv/vol141/phys_nrf/JohnMatter/ccr_phantom/data/$patient
+source /nv/vol141/phys_nrf/YOURNAME/sbrt_radiomics_env2/bin/activate
+cd /nv/vol141/phys_nrf/YOURNAME/sbrt_radiomics/src/ccr_phantom_analysis
+./calculate_radiomic_features.sh /nv/vol141/phys_nrf/YOURNAME/ccr_phantom/data/$patient

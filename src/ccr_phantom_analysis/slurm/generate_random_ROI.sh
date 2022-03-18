@@ -4,7 +4,7 @@
 
 patient=$1
 
-patient_dir=\\/nv\\/vol141\\/phys_nrf\\/JohnMatter\\/ccr_phantom\\/data\\/${patient}
+patient_dir=\\/nv\\/vol141\\/phys_nrf\\/YOURNAME\\/ccr_phantom\\/data\\/${patient}
 patient_str=${patient}
 
 materials=()

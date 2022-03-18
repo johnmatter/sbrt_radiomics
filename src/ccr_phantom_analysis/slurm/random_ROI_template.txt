@@ -20,8 +20,8 @@ module load python/3.6.6
 
 patient=PATIENTDIR
 
-source /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics_env2/bin/activate
-cd /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics/src/ccr_phantom_analysis
+source /nv/vol141/phys_nrf/YOURNAME/sbrt_radiomics_env2/bin/activate
+cd /nv/vol141/phys_nrf/YOURNAME/sbrt_radiomics/src/ccr_phantom_analysis
 
 python generate_random_ROIs.py 100 cube MATERIALFILENAME PATIENTDIR/masks
 python generate_random_ROIs.py 100 slab MATERIALFILENAME PATIENTDIR/masks

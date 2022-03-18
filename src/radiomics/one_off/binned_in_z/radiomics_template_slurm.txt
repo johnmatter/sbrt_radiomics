@@ -19,6 +19,6 @@ module load python/3.6.6
 
 patient=PATIENTDIR
 
-source /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics_env/bin/activate
-cd /nv/vol141/phys_nrf/JohnMatter/sbrt_radiomics/src/radiomics/one_off/aorta_thirds_in_z
+source /nv/vol141/phys_nrf/YOURNAME/sbrt_radiomics_env/bin/activate
+cd /nv/vol141/phys_nrf/YOURNAME/sbrt_radiomics/src/radiomics/one_off/aorta_thirds_in_z
 ./radiomics.sh $patient
